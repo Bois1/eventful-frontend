@@ -34,7 +34,6 @@ export default function MyTickets() {
   const isAuthenticated = authService.isAuthenticated();
   const currentUser = authService.getCurrentUser(); 
   const [searchParams] = useSearchParams();
-  const location = useLocation();
 
   useEffect(() => {
     if (!isAuthenticated) {

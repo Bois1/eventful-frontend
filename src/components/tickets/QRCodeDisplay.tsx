@@ -1,5 +1,3 @@
-import QRCode from 'qrcode.react';
-
 interface QRCodeDisplayProps {
   qrCode: string;
   eventName: string;

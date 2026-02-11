@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { eventService } from '../services/eventService';
 import { Event } from '../types';
 import EventCard from '../components/events/EventCard';
-import { FiSearch, FiFilter, FiCalendar, FiTag, FiMapPin } from 'react-icons/fi';
+import { FiSearch, FiCalendar,} from 'react-icons/fi';
 
 export default function Events() {
   const [events, setEvents] = useState<Event[]>([]);

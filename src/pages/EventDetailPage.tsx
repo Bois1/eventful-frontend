@@ -17,7 +17,7 @@ export default function EventDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [purchasing, setPurchasing] = useState(false);
   const [showQR, setShowQR] = useState(false);
-  const [qrCode, setQrCode] = useState<string | null>(null);
+  const [qrCode, _setQrCode] = useState<string | null>(null); 
   const isAuthenticated = authService.isAuthenticated();
   const currentUser = authService.getCurrentUser();
 

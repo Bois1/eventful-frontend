@@ -6,7 +6,6 @@ import { FiCalendar, FiMapPin, FiUsers, FiEye, FiEdit, FiPlay, FiBarChart, FiTra
 import { format } from 'date-fns';
 
 export default function Dashboard() {
-  const navigate = useNavigate();
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
