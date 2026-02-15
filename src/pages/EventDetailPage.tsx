@@ -42,63 +42,60 @@ export default function EventDetailPage() {
   };
 
   const handlePurchaseTicket = async () => {
-    if (!isAuthenticated) {
-      if (confirm('You need to be logged in to purchase tickets. Go to login page?')) {
-        navigate('/login', { state: { from: `/events/${id}` } });
-      }
-      return;
+  if (!isAuthenticated) {
+    if (confirm('You need to be logged in to purchase tickets. Go to login page?')) {
+      navigate('/login', { state: { from: `/events/${id}` } });
     }
+    return;
+  }
 
-    if (!event) return;
+  if (!event) return;
 
+  if (new Date(event.startTime) < new Date()) {
+    alert('This event has already started or ended.');
+    return;
+  }
 
-    try {
-      const tickets = await ticketService.getMyTickets();
-      const existingTicket = tickets.find(t => t.eventId === event.id && t.status !== 'CANCELLED');
-      
-      if (existingTicket) {
-        if (existingTicket.status === 'PAID') {
-          alert('You already have a ticket for this event!');
-          setShowQR(true);
-        } else if (existingTicket.status === 'PENDING') {
-          alert('You have a pending ticket for this event. Please complete payment.');
-        }
-        return;
-      }
-    } catch (err) {
-      
+  if (event.ticketsSold && event.ticketsSold >= event.capacity) {
+    alert('Sorry, this event is sold out!');
+    return;
+  }
+
+  setPurchasing(true);
+  try {
+    const ticket = await ticketService.purchaseTicket(event.id);
+    
+    if (!currentUser?.email) {
+      throw new Error('User email not found. Please log in again.');
     }
 
     
-    if (event.ticketsSold && event.ticketsSold >= event.capacity) {
-      alert('Sorry, this event is sold out!');
-      return;
+    const amountInKobo = Math.round(event.price * 100);
+    
+    if (amountInKobo <= 0) {
+      throw new Error('Invalid ticket price. Please contact support.');
     }
 
-    if (new Date(event.startTime) < new Date()) {
-      alert('This event has already started or ended.');
-      return;
+    const paymentData = await paymentService.initializePayment({
+      ticketId: ticket.id,
+      email: currentUser.email,
+      amount: amountInKobo  
+    });
+
+    if (!paymentData.authorizationUrl) {
+      throw new Error('Payment initialization failed. Please try again.');
     }
 
-    setPurchasing(true);
-    try {
-      const ticket = await ticketService.purchaseTicket(event.id);
-      
-      const paymentData = await paymentService.initializePayment({
-        ticketId: ticket.id,
-        email: currentUser?.email || '',
-        amount: event.price * 100 
-      });
-
-      
-      window.location.href = paymentData.authorizationUrl;
-    } catch (err: any) {
-      console.error('Failed to purchase ticket:', err);
-      alert(err.response?.data?.error || 'Failed to purchase ticket. Please try again.');
-    } finally {
-      setPurchasing(false);
-    }
-  };
+   
+    window.location.href = paymentData.authorizationUrl;
+  } catch (err: any) {
+    console.error('Payment initiation failed:', err);
+    const errorMsg = err.response?.data?.error || err.message || 'Failed to initiate payment. Please try again.';
+    alert(`${errorMsg}\n\nIf this persists, contact support with error details.`);
+  } finally {
+    setPurchasing(false);
+  }
+};
 
   const handleShareEvent = async () => {
     const shareData = {
